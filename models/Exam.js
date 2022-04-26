@@ -11,6 +11,10 @@ const examSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    class: {
+      type: String,
+      required: true
+    }
   },
   { timestamps: true }
 );

@@ -25,8 +25,9 @@ app.get("/", (req, res) => {
   res.send(new Date());
 });
 
-app.use("/admin", require("./routes/admin"));
 app.use("/exams", require("./routes/exam"));
+app.use("/subjects", require("./routes/subjects"));
+app.use("/users", require("./routes/users"));
 
 app.listen(process.env.PORT, () => {
   log(`Server is running on port ${process.env.PORT}`);

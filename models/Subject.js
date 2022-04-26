@@ -20,6 +20,7 @@ const subjSchema = new Schema(
         img: String,
       },
     },
+    class: String
   },
   { timestamps: true }
 );
