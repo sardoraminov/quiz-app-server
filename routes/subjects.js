@@ -5,13 +5,38 @@ const Subject = require("../models/Subject");
 const { upload } = require("../utils/upload");
 require("dotenv").config();
 
-router.post("/create", upload.single("img"), async (req, res) => {
+router.post("/create", async (req, res) => {
   try {
-    const { name, questions, classNum } = req.body;
-    const newSubject = await new Subject({ name, questions, class: classNum });
+    const { name, classNum } = req.body;
+    const newSubject = await new Subject({ name, class: classNum });
     const savedSubject = await newSubject.save();
 
     res.json(savedSubject);
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+router.put("/:name/:classNum/update_questions", async (req, res) => {
+  try {
+    upload.array("image", req.body.limit)(req, res, async (err) => {
+      if (err) {
+        console.log(err);
+      }
+      const { questions } = req.body;
+      const { name, classNum } = req.params;
+      const subject = await Subject.findOneAndUpdate(
+        { name, class: classNum },
+        {
+          $set: { questions },
+        },
+        { new: true }
+      );
+
+      const savedSubject = await subject.save();
+
+      res.json(savedSubject);
+    });
   } catch (error) {
     console.log(error);
   }
@@ -32,7 +57,10 @@ router.put("/active/:id", async (req, res) => {
 
     await updatedSubject.save();
 
-    res.json({ msg: "O'zgarishlar saqlandi. Imtihon ochildi", exam: resp.data });
+    res.json({
+      msg: "O'zgarishlar saqlandi. Imtihon ochildi",
+      exam: resp.data,
+    });
   } catch (error) {
     console.log(error);
   }
