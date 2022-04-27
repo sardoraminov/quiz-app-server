@@ -27,6 +27,7 @@ router.post("/create", async (req, res) => {
     const newExam = await new Exam({
       name: req.body.name,
       class: req.body.classNum,
+      timeOut: req.body.timeOut
     });
 
     await newExam.save();
@@ -54,12 +55,14 @@ router.put("/:id/pupil", async (req, res) => {
 router.delete("/:id/:name/:class", async (req, res) => {
   try {
     await Exam.findByIdAndDelete(req.params.id);
-    const resp = await axios.delete(`${process.env.SERVER_URI}/subjects/inactive`, {
+    const resp = await axios.put(`${process.env.SERVER_URI}/subjects/inactive`, {
       name: req.params.name, classNum: req.params.class,
     });
 
+    res.json({msg: "Imtihon yopildi!", data: resp.data});
+
   } catch (error) {
-    
+    console.log(error);
   }
 });
 

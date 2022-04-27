@@ -26,6 +26,11 @@ const userSchema = new Schema(
       required: true,
       type: String,
     },
+    profilPic: {
+      type: String,
+      default:
+        "https://icon-library.com/images/default-user-icon/default-user-icon-13.jpg",
+    },
   },
   { timestamps: true }
 );

@@ -26,6 +26,8 @@ router.put("/active/:id", async (req, res) => {
 
     const resp = await axios.post(`${process.env.SERVER_URI}/exams/create`, {
       name: updatedSubject.name,
+      class: updatedSubject.class,
+      timeOut: req.body.timeOut,
     });
 
     await updatedSubject.save();

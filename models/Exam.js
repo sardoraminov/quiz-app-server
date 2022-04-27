@@ -13,8 +13,12 @@ const examSchema = new Schema(
     },
     class: {
       type: String,
-      required: true
-    }
+      required: true,
+    },
+    timeOut: {
+      type: String,
+      required: true,
+    },
   },
   { timestamps: true }
 );

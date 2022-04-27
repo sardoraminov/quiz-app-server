@@ -87,15 +87,21 @@ router.get("/enterexam/:name/:classNum", async (req, res) => {
       res.json({ msg: "Imtihon mavjud emas" });
     }
 
-    const resp = await axios.put(
-      `${process.env.SERVER_URI}/exams/${existExam._id}/pupil`
-    );
+    const token = req.headers["authorization"].split(" ")[1];
+    let resp;
+    if (!token  ) {
+      resp = await axios.put(
+        `${process.env.SERVER_URI}/exams/${existExam._id}/pupil`
+      );
+    }
 
     res.json({
       examQuestions: existExam.questions,
       examName: existExam.name,
       examClass: existExam.class,
+      examTimeOut: existExam.timeOut,
       pupilsInExam: resp.data.pupils,
+
     });
   } catch (error) {
     console.log(error);
