@@ -2,10 +2,17 @@ const { model, Schema } = require("mongoose");
 
 const subjSchema = new Schema(
   {
-    name: String,
+    name: {
+      type: String,
+      required: true,
+    },
     active: {
       type: Boolean,
       default: false,
+    },
+    classNum: {
+      type: String,
+      required: true,
     },
     questions: {
       type: Array,
@@ -19,7 +26,6 @@ const subjSchema = new Schema(
         correct: String,
       },
     },
-    class: String
   },
   { timestamps: true }
 );

@@ -7,44 +7,43 @@ require("dotenv").config();
 
 router.post("/create", async (req, res) => {
   try {
-    upload.array("image", +req.body.limit);
-
-    const existingSubject = await Subject.findOne({
-      name: req.body.name,
-      class: req.body.classNum,
-    });
-
-    if (existingSubject) {
-      res.json({ status: "bad", msg: "Bunday savol to'plami tizimda mavjud!" });
-    }
 
     const subject = await new Subject({
       name: req.body.name,
-      classNum: req.body.class,
+      classNum: req.body.classNum,
       questions: req.body.questions,
     });
 
     const savedSubject = await subject.save();
 
-    res.json(savedSubject);
+    res.json({ savedSubject, status: "ok" });
   } catch (error) {
     console.log(error);
   }
 });
 
-router.put("/:name/:classNum", async (req, res) => {
+router.get("/get/:id", async (req, res) => {
+  try {
+    const subject = await Subject.findById(req.params.id)
+
+    res.json({ subject, status: "ok" });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+router.put("/update/:id", async (req, res) => {
   try {
     const { index, question } = req.body;
 
-    Subject.findOne({
-      name: req.params.name,
-      class: req.params.classNum,
-    }).then((subject) => {
+    console.log(req.body);
+
+    Subject.findById(req.params.id).then((subject) => {
       subject.questions[index] = question;
       subject.save();
       res.json({
         subject,
-        msg: "Savollar to'plami yangilandi",
+        msg: "O'zgarishlar saqlandi",
         status: "ok",
       });
     });
@@ -77,12 +76,11 @@ router.put("/active/:id", async (req, res) => {
   }
 });
 
-router.put("/inactive", async (req, res) => {
+router.put("/inactive/:id", async (req, res) => {
   try {
-    const updatedSubject = await Subject.findOneAndUpdate(
-      { name: req.body.name, class: req.body.classNum },
-      { $set: { active: false } }
-    );
+    const updatedSubject = await Subject.findByIdAndUpdate(req.params.id, {
+      $set: { active: false },
+    });
 
     await updatedSubject.save();
 
@@ -122,7 +120,7 @@ router.delete("/", async (req, res) => {
 
     res.json({ msg: "Deleted!" });
   } catch (error) {
-    res.send(error)
+    res.send(error);
   }
 });
 
