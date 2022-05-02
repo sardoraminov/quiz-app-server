@@ -7,7 +7,6 @@ require("dotenv").config();
 
 router.post("/create", async (req, res) => {
   try {
-
     const subject = await new Subject({
       name: req.body.name,
       classNum: req.body.classNum,
@@ -24,7 +23,7 @@ router.post("/create", async (req, res) => {
 
 router.get("/get/:id", async (req, res) => {
   try {
-    const subject = await Subject.findById(req.params.id)
+    const subject = await Subject.findById(req.params.id);
 
     res.json({ subject, status: "ok" });
   } catch (error) {
@@ -95,6 +94,24 @@ router.delete("/delete/:id", async (req, res) => {
     const { id } = req.params;
     await Subject.findByIdAndDelete(id);
     res.json({ msg: "Fan savollari o'chirildi!" });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+router.put("/deleteOneQuestion/:id", async (req, res) => {
+  try {
+    const subject = await Subject.findByIdAndUpdate(
+      req.params.id,
+      {
+        $pull: { questions: req.body.question },
+      },
+      { new: true, multi: true }
+    );
+
+    await subject.save();
+
+    res.json({ msg: "Savol o'chirildi", subject });
   } catch (error) {
     console.log(error);
   }
