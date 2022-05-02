@@ -7,9 +7,24 @@ require("dotenv").config();
 
 router.post("/create", async (req, res) => {
   try {
-    const { name, classNum } = req.body;
-    const newSubject = await new Subject({ name, class: classNum });
-    const savedSubject = await newSubject.save();
+    upload.array("image", +req.body.limit);
+
+    const existingSubject = await Subject.findOne({
+      name: req.body.name,
+      class: req.body.classNum,
+    });
+
+    if (existingSubject) {
+      res.json({ status: "bad", msg: "Bunday savol to'plami tizimda mavjud!" });
+    }
+
+    const subject = await new Subject({
+      name: req.body.name,
+      classNum: req.body.class,
+      questions: req.body.questions,
+    });
+
+    const savedSubject = await subject.save();
 
     res.json(savedSubject);
   } catch (error) {
@@ -17,25 +32,21 @@ router.post("/create", async (req, res) => {
   }
 });
 
-router.put("/:name/:classNum/update_questions", async (req, res) => {
+router.put("/:name/:classNum", async (req, res) => {
   try {
-    upload.array("image", req.body.limit)(req, res, async (err) => {
-      if (err) {
-        console.log(err);
-      }
-      const { questions } = req.body;
-      const { name, classNum } = req.params;
-      const subject = await Subject.findOneAndUpdate(
-        { name, class: classNum },
-        {
-          $set: { questions },
-        },
-        { new: true }
-      );
+    const { index, question } = req.body;
 
-      const savedSubject = await subject.save();
-
-      res.json(savedSubject);
+    Subject.findOne({
+      name: req.params.name,
+      class: req.params.classNum,
+    }).then((subject) => {
+      subject.questions[index] = question;
+      subject.save();
+      res.json({
+        subject,
+        msg: "Savollar to'plami yangilandi",
+        status: "ok",
+      });
     });
   } catch (error) {
     console.log(error);
@@ -102,6 +113,16 @@ router.get("/", async (req, res) => {
     });
   } catch (error) {
     console.log(error);
+  }
+});
+
+router.delete("/", async (req, res) => {
+  try {
+    await Subject.deleteMany();
+
+    res.json({ msg: "Deleted!" });
+  } catch (error) {
+    res.send(error)
   }
 });
 

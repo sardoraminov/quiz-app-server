@@ -17,7 +17,6 @@ const subjSchema = new Schema(
         optionC: String,
         optionD: String,
         correct: String,
-        img: String,
       },
     },
     class: String

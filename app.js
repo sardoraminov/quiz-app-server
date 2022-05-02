@@ -13,7 +13,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname + "dist")));
 
 
-connect(process.env.DB_CONNECTION)
+connect(process.env.ATLAS_URI)
   .then(() => {
     log("Connected to DB");
   })
