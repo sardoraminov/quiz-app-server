@@ -60,14 +60,14 @@ router.put("/active/:id", async (req, res) => {
 
     const resp = await axios.post(`${process.env.SERVER_URI}/exams/create`, {
       name: updatedSubject.name,
-      class: updatedSubject.class,
+      classNum: updatedSubject.classNum,
       timeOut: req.body.timeOut,
     });
 
     await updatedSubject.save();
 
     res.json({
-      msg: "O'zgarishlar saqlandi. Imtihon ochildi",
+      msg: `${updatedSubject.name} fani bo'yicha ${updatedSubject.classNum} - sinflarga imtihon ochildi!`,
       exam: resp.data,
     });
   } catch (error) {
@@ -83,7 +83,11 @@ router.put("/inactive/:id", async (req, res) => {
 
     await updatedSubject.save();
 
-    res.json(updatedSubject);
+    res.json({
+      updatedSubject,
+      msg: `${updatedSubject.name} fani bo'yicha ${updatedSubject.classNum} - sinflarga imtihon ochildi!`,
+      status: "ok",
+    });
   } catch (error) {
     console.log(error);
   }

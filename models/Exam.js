@@ -11,7 +11,7 @@ const examSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    class: {
+    classNum: {
       type: String,
       required: true,
     },
