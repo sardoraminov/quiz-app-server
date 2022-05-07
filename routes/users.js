@@ -10,7 +10,17 @@ router.get("/", async (req, res) => {
   try {
     User.find().then((users) => {
       const sortedUsers = users.sort((a, b) => {
-        return +b.active - +a.active;
+        if (a.status === "finish" && b.status !== "finish") {
+          return -1;
+        } else if (a.status !== "finish" && b.status === "finish") {
+          return 1;
+        } else if (a.status === "inExam" && b.status !== "inExam") {
+          return -1;
+        } else if (a.status !== "inExam" && b.status === "inExam") {
+          return 1;
+        } else {
+          return 0;
+        }
       });
       res.json(sortedUsers);
     });
@@ -25,12 +35,12 @@ router.post("/create", async (req, res) => {
     const newUser = await new User({
       oneId,
       fullname,
-      class: classNum,
+      classNum,
     });
 
     await newUser.save();
 
-    res.json(newUser);
+    res.json({ user: newUser });
   } catch (error) {
     console.log(error);
   }
@@ -89,7 +99,7 @@ router.get("/enterexam/:name/:classNum", async (req, res) => {
 
     const token = req.headers["authorization"].split(" ")[1];
     let resp;
-    if (!token  ) {
+    if (!token) {
       resp = await axios.put(
         `${process.env.SERVER_URI}/exams/${existExam._id}/pupil`
       );
@@ -101,7 +111,6 @@ router.get("/enterexam/:name/:classNum", async (req, res) => {
       examClass: existExam.class,
       examTimeOut: existExam.timeOut,
       pupilsInExam: resp.data.pupils,
-
     });
   } catch (error) {
     console.log(error);
