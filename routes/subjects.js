@@ -96,8 +96,10 @@ router.put("/inactive/:id", async (req, res) => {
 router.delete("/delete/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    await Subject.findByIdAndDelete(id);
-    res.json({ msg: "Fan savollari o'chirildi!" });
+    const deletedSubj = await Subject.findByIdAndDelete(id);
+    res.json({
+      msg: `${deletedSubj.classNum} - sinf ${deletedSubj.name} fan savollar to'plami o'chirildi!`,
+    });
   } catch (error) {
     console.log(error);
   }
