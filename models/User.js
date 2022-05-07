@@ -14,9 +14,9 @@ const userSchema = new Schema(
       type: String,
       default: "",
     },
-    status: {
-      type: String,
-      default: "free",
+    active: {
+      type: Boolean,
+      default: false,
     },
     rating: {
       type: String,

@@ -10,17 +10,7 @@ router.get("/", async (req, res) => {
   try {
     User.find().then((users) => {
       const sortedUsers = users.sort((a, b) => {
-        if (a.status === "finish" && b.status !== "finish") {
-          return -1;
-        } else if (a.status !== "finish" && b.status === "finish") {
-          return 1;
-        } else if (a.status === "inExam" && b.status !== "inExam") {
-          return -1;
-        } else if (a.status !== "inExam" && b.status === "inExam") {
-          return 1;
-        } else {
-          return 0;
-        }
+        return +b.active - +a.active;
       });
       res.json(sortedUsers);
     });
