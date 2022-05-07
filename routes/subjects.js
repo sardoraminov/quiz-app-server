@@ -85,7 +85,7 @@ router.put("/inactive/:id", async (req, res) => {
 
     res.json({
       updatedSubject,
-      msg: `${updatedSubject.name} fani bo'yicha ${updatedSubject.classNum} - sinflarga imtihon ochildi!`,
+      msg: `${updatedSubject.name} fani bo'yicha ${updatedSubject.classNum} - sinflarga imtihon yopildi!`,
       status: "ok",
     });
   } catch (error) {
