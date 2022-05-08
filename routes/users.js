@@ -19,6 +19,21 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/:id", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      res.json({
+        status: "error",
+        msg: `O'quvchi topilmadi!`,
+      });
+    }
+    res.json(user);
+  } catch (error) {
+    console.log(error);
+  }
+});
+
 router.post("/create", async (req, res) => {
   try {
     const { oneId, fullname, classNum } = req.body;
@@ -39,8 +54,10 @@ router.post("/create", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const { id } = req.params;
+
+    console.log(req.body);
     const updatedUser = await User.findByIdAndUpdate(id, {
-      $set: req.body,
+      $set: req.body.user,
     });
 
     await updatedUser.save();

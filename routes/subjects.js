@@ -1,5 +1,6 @@
 const { default: axios } = require("axios");
 const express = require("express");
+const { default: mongoose } = require("mongoose");
 const router = express.Router();
 const Subject = require("../models/Subject");
 const { upload } = require("../utils/upload");
@@ -24,8 +25,13 @@ router.post("/create", async (req, res) => {
 router.get("/get/:id", async (req, res) => {
   try {
     const subject = await Subject.findById(req.params.id);
-
-    res.json({ subject, status: "ok" });
+    if (!subject) {
+      res.json({
+        status: "error",
+        message: `Fan savollar to'plami topilmadi.`,
+      });
+    }
+    res.json({ subject: subject });
   } catch (error) {
     console.log(error);
   }
@@ -50,6 +56,23 @@ router.put("/update/:id", async (req, res) => {
     console.log(error);
   }
 });
+
+router.put("/updateAll/:id", async (req, res) => {
+  try {
+    console.log(req.body);
+    const updatedSubj = await Subject.findByIdAndUpdate(
+      req.params.id,
+      { $set: req.body.subject },
+      { new: true }
+    );
+
+    await updatedSubj.save();
+
+    res.json({msg: "O'zgarishlar saqlandi", status: "ok", updatedSubj});
+  } catch (error) {
+    console.log(error);
+  }
+}); 
 
 router.put("/active/:id", async (req, res) => {
   try {
