@@ -68,47 +68,46 @@ router.put("/updateAll/:id", async (req, res) => {
 
     await updatedSubj.save();
 
-    res.json({msg: "O'zgarishlar saqlandi", status: "ok", updatedSubj});
+    res.json({ msg: "O'zgarishlar saqlandi", status: "ok", updatedSubj });
   } catch (error) {
     console.log(error);
   }
-}); 
+});
 
-router.put("/active/:id", async (req, res) => {
+router.put("/active/:name/:classNum", async (req, res) => {
   try {
-    const { id } = req.params;
-    const updatedSubject = await Subject.findByIdAndUpdate(id, {
-      $set: { active: true },
-    });
-
-    const resp = await axios.post(`${process.env.SERVER_URI}/exams/create`, {
-      name: updatedSubject.name,
-      classNum: updatedSubject.classNum,
-      timeOut: req.body.timeOut,
-    });
+    const { name, classNum } = req.params;
+    const updatedSubject = await Subject.findOneAndUpdate(
+      { name, classNum },
+      { $set: { active: true } },
+      { new: true }
+    );
 
     await updatedSubject.save();
 
     res.json({
-      msg: `${updatedSubject.name} fani bo'yicha ${updatedSubject.classNum} - sinflarga imtihon ochildi!`,
-      exam: resp.data,
+      msg: `${updatedSubject.name} ${updatedSubject.classNum} - sinf to'plami faollashtirildi!`,
+      status: "ok",
     });
   } catch (error) {
     console.log(error);
   }
 });
 
-router.put("/inactive/:id", async (req, res) => {
+router.put("/inactive/:name/:classNum", async (req, res) => {
   try {
-    const updatedSubject = await Subject.findByIdAndUpdate(req.params.id, {
-      $set: { active: false },
-    });
+    const { name, classNum } = req.params;
+    const updatedSubject = await Subject.findOneAndUpdate(
+      { name, classNum },
+      { $set: { active: false } },
+      { new: true }
+    );
 
     await updatedSubject.save();
 
     res.json({
       updatedSubject,
-      msg: `${updatedSubject.name} fani bo'yicha ${updatedSubject.classNum} - sinflarga imtihon yopildi!`,
+      msg: `${updatedSubject.name} ${updatedSubject.classNum} - sinf to'plami faollashtirildi!`,
       status: "ok",
     });
   } catch (error) {

@@ -19,6 +19,10 @@ const examSchema = new Schema(
       type: String,
       required: true,
     },
+    oneId: {
+      type: String,
+      required: true,
+    },
   },
   { timestamps: true }
 );

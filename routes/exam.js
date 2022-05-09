@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Exam = require("../models/Exam");
 const { default: axios } = require("axios");
-require('dotenv').config();
+require("dotenv").config();
 
 router.get("/", async (req, res) => {
   try {
@@ -27,12 +27,23 @@ router.post("/create", async (req, res) => {
     const newExam = await new Exam({
       name: req.body.name,
       class: req.body.classNum,
-      timeOut: req.body.timeOut
+      timeOut: req.body.timeOut,
+      oneId: req.body.oneId
     });
 
-    await newExam.save();
+    const { data } = await axios.put(
+      `${process.env.SERVER_URI}/subjects/active/${req.body.name}/${req.body.classNum}`
+    );
 
-    res.json(newExam);
+    console.log(data);
+
+    const savedExam = await newExam.save();
+
+    res.json({
+      msg: `${savedExam.name} fani bo'yicha ${savedExam.classNum} - sinflar uchun imtihon ochildi!`,
+      exam: newExam,
+      subject: data.msg,
+    });
   } catch (error) {
     console.log(error);
   }
@@ -52,15 +63,19 @@ router.put("/:id/pupil", async (req, res) => {
   }
 });
 
-router.delete("/:id/:name/:class", async (req, res) => {
+router.delete("/:id/:name/:classNum", async (req, res) => {
   try {
     await Exam.findByIdAndDelete(req.params.id);
-    const resp = await axios.put(`${process.env.SERVER_URI}/subjects/inactive`, {
-      name: req.params.name, classNum: req.params.class,
+    const { data } = await axios.put(
+      `${process.env.SERVER_URI}/subjects/inactive/${req.params.name}/${req.params.classNum}`
+    );
+
+    console.log(data);
+
+    res.json({
+      msg: `${req.params.name} fani bo'yicha ${req.params.classNum} - sinflarga imtihon yopildi!`,
+      subject: data.msg,
     });
-
-    res.json({msg: "Imtihon yopildi!", data: resp.data});
-
   } catch (error) {
     console.log(error);
   }
