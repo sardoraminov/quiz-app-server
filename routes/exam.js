@@ -26,9 +26,9 @@ router.post("/create", async (req, res) => {
   try {
     const newExam = await new Exam({
       name: req.body.name,
-      class: req.body.classNum,
+      classNum: req.body.classNum,
       timeOut: req.body.timeOut,
-      oneId: req.body.oneId
+      oneId: req.body.oneId,
     });
 
     const { data } = await axios.put(

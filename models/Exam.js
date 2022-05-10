@@ -16,7 +16,7 @@ const examSchema = new Schema(
       required: true,
     },
     timeOut: {
-      type: String,
+      type: Number,
       required: true,
     },
     oneId: {

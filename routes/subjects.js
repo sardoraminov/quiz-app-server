@@ -169,4 +169,20 @@ router.delete("/", async (req, res) => {
   }
 });
 
+router.get("/all", async (req, res) => {
+  try {
+    const subjects = await Subject.find();
+    const uniqueNames = [...new Set(subjects.map((subject) => subject.name))];
+    const uniqueClasses = [
+      ...new Set(subjects.map((subject) => subject.classNum)),
+    ];
+
+    if (!subjects) res.json({ status: "bad", message: "No subjects found" });
+
+    res.json({ subject_names: uniqueNames, subject_classes: uniqueClasses, status: "ok" });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
 module.exports = router;
