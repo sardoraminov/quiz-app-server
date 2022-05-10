@@ -19,6 +19,10 @@ const examSchema = new Schema(
       type: Number,
       required: true,
     },
+    timeOutOriginal: {
+      type: String,
+      required: true,
+    },
     oneId: {
       type: String,
       required: true,
@@ -27,4 +31,8 @@ const examSchema = new Schema(
   { timestamps: true }
 );
 
-module.exports = model("Exam", examSchema);
+
+module.exports = {
+  Exam: model("Exam", examSchema),
+  Schema: examSchema,
+};

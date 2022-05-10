@@ -107,7 +107,7 @@ router.put("/inactive/:name/:classNum", async (req, res) => {
 
     res.json({
       updatedSubject,
-      msg: `${updatedSubject.name} ${updatedSubject.classNum} - sinf to'plami faollashtirildi!`,
+      msg: `${updatedSubject.name} ${updatedSubject.classNum} - sinf to'plami yopildi!`,
       status: "ok",
     });
   } catch (error) {

@@ -1,4 +1,6 @@
 const express = require("express");
+const httpServer = require("http").createServer()
+const { Server } = require("socket.io");
 const app = express();
 require("dotenv").config();
 const { connect } = require("mongoose");

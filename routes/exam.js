@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const Exam = require("../models/Exam");
+const { Exam } = require("../models/Exam");
 const { default: axios } = require("axios");
 require("dotenv").config();
 
@@ -28,6 +28,7 @@ router.post("/create", async (req, res) => {
       name: req.body.name,
       classNum: req.body.classNum,
       timeOut: req.body.timeOut,
+      timeOutOriginal: req.body.timeOutOriginal,
       oneId: req.body.oneId,
     });
 
@@ -38,6 +39,15 @@ router.post("/create", async (req, res) => {
     console.log(data);
 
     const savedExam = await newExam.save();
+
+    // auto update field after document saved with setTimeout
+    setTimeout(() => {
+      Exam.findByIdAndUpdate(savedExam._id, { $set: { finished: true } }).then(
+        () => {
+          console.log("Exam finished!");
+        }
+      );
+    }, req.body.timeOut);
 
     res.json({
       msg: `${savedExam.name} fani bo'yicha ${savedExam.classNum} - sinflar uchun imtihon ochildi!`,
