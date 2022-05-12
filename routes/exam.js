@@ -40,14 +40,33 @@ router.post("/create", async (req, res) => {
 
     const savedExam = await newExam.save();
 
-    // auto update field after document saved with setTimeout
-    setTimeout(() => {
-      Exam.findByIdAndUpdate(savedExam._id, { $set: { finished: true } }).then(
-        () => {
-          console.log("Exam finished!");
-        }
+    let myInterval;
+
+    myInterval = setInterval(async () => {
+      const updatedExam = await Exam.findByIdAndUpdate(
+        savedExam._id,
+        { $inc: { timeOut: -1000 } },
+        { new: true }
       );
-    }, req.body.timeOut);
+
+      console.log(updatedExam.timeOut);
+
+      if (updatedExam.timeOut === 0 || updatedExam.timeOut < 0) {
+        await Exam.findByIdAndUpdate(
+          updatedExam._id,
+          { $set: { finished: true } },
+          { new: true }
+        );
+        clearInterval(myInterval);
+        await axios
+          .put(
+            `${process.env.SERVER_URI}/subjects/inactive/${req.body.name}/${req.body.classNum}`
+          )
+          .then((res) => {
+            console.log(res.data.msg);
+          });
+      }
+    }, 1000);
 
     res.json({
       msg: `${savedExam.name} fani bo'yicha ${savedExam.classNum} - sinflar uchun imtihon ochildi!`,
