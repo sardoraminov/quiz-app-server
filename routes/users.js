@@ -1,10 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const Subject = require("../models/Subject");
-const Exam = require("../models/Exam");
+const {Exam} = require("../models/Exam");
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const { default: axios } = require("axios");
+const { checkUser } = require("../middlewares/checkUser");
 
 router.get("/", async (req, res) => {
   try {
@@ -77,47 +78,56 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-router.post("/login", async (req, res) => {
+router.post("/login", checkUser, async (req, res) => {
   try {
     const existUser = await User.findOne({ oneId: req.body.oneId });
-    if (existUser) {
-      const token = jwt.sign({ id: existUser._id }, process.env.JWT_SECRET, {
-        expiresIn: "1d",
-      });
-      res.json({
-        login: true,
-        token,
-        user: existUser,
-      });
-    }
-    res.json({ msg: "Bu ID tizimda mavjud emas!" });
+
+    const auth_token = jwt.sign({ id: existUser._id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
+
+    res.json({
+      login: true,
+      auth_token,
+      user: existUser,
+    });
   } catch (error) {
     console.log(error);
   }
 });
 
-router.get("/enterexam/:name/:classNum", async (req, res) => {
+router.get("/enterexam/:oneId", async (req, res) => {
   try {
-    const { name, classNum } = req.params;
-    const existExam = await Exam.findOne({ name, class: classNum });
+    console.log(req.cookies);
+    const { oneId } = req.params;
+    const existExam = await Exam.findOne({ oneId });
     if (!existExam) {
       res.json({ msg: "Imtihon mavjud emas" });
     }
 
-    const token = req.headers["authorization"].split(" ")[1];
-    let resp;
+    const subject = await Subject.findOne({
+      name: existExam.name,
+      classNum: existExam.classNum,
+    });
+
+    const token = req.cookies.auth_token   
     if (!token) {
-      resp = await axios.put(
+      let resp = await axios.put(
         `${process.env.SERVER_URI}/exams/${existExam._id}/pupil`
       );
+      console.log(resp.data);
     }
 
+    const exam_token = jwt.sign({ id: existExam._id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
+
     res.json({
-      examQuestions: existExam.questions,
+      examQuestions: subject.questions,
       examName: existExam.name,
-      examClass: existExam.class,
+      examClassNum: existExam.classNum,
       examTimeOut: existExam.timeOut,
-      pupilsInExam: resp.data.pupils,
+      exam_token,
     });
   } catch (error) {
     console.log(error);

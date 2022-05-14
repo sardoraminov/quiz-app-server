@@ -1,27 +1,18 @@
 const express = require("express");
-const httpServer = require("http").createServer;
-const { Server } = require("socket.io");
 const app = express();
 require("dotenv").config();
 const { connect } = require("mongoose");
 const path = require("path");
 const cors = require("cors");
 const log = console.log;
+const cookieParser = require("cookie-parser");
 
-const server = httpServer(app);
-const io = new Server(server);
+app.use(cookieParser())
 
 app.use(cors({ origin: "*" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname + "dist")));
-
-io.on("connection", (socket) => {
-  console.log("connected to socket");
-  socket.on("disconnect", () => {
-    console.log("disconnected from socket");
-  });
-});
 
 
 connect(process.env.ATLAS_URI)

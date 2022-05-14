@@ -2,11 +2,21 @@ const express = require("express");
 const router = express.Router();
 const { Exam } = require("../models/Exam");
 const { default: axios } = require("axios");
+const { checkExam } = require("../middlewares/checkExam");
 require("dotenv").config();
 
 router.get("/", async (req, res) => {
   try {
-    const exams = await Exam.find();
+    const exams = await Exam.find().sort({ createdAt: -1 });
+    res.json(exams);
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+router.get("/forusers", async (req, res) => {
+  try {
+    const exams = await Exam.find({ active: true }).sort({ createdAt: -1 });
     res.json(exams);
   } catch (error) {
     console.log(error);
@@ -22,7 +32,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.post("/create", async (req, res) => {
+router.post("/create", checkExam, async (req, res) => {
   try {
     const newExam = await new Exam({
       name: req.body.name,
@@ -36,8 +46,6 @@ router.post("/create", async (req, res) => {
       `${process.env.SERVER_URI}/subjects/active/${req.body.name}/${req.body.classNum}`
     );
 
-    console.log(data);
-
     const savedExam = await newExam.save();
 
     let myInterval;
@@ -48,8 +56,6 @@ router.post("/create", async (req, res) => {
         { $inc: { timeOut: -1000 } },
         { new: true }
       );
-
-      console.log(updatedExam.timeOut);
 
       if (updatedExam.timeOut === 0 || updatedExam.timeOut < 0) {
         await Exam.findByIdAndUpdate(
@@ -87,6 +93,25 @@ router.put("/:id/pupil", async (req, res) => {
     await updatedExam.save();
 
     res.json(updatedExam);
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+router.put("/finish/:id", async (req, res) => {
+  try {
+    const updatedExam = await Exam.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: { finished: true },
+      },
+      { new: true }
+    );
+
+    res.json({
+      msg: `${updatedExam.name} fani bo'yicha ${updatedExam.classNum} - sinflar uchun imtihon yopildi!`,
+      exam: updatedExam,
+    });
   } catch (error) {
     console.log(error);
   }
