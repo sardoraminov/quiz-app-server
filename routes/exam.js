@@ -3,6 +3,8 @@ const router = express.Router();
 const { Exam } = require("../models/Exam");
 const { default: axios } = require("axios");
 const { checkExam } = require("../middlewares/checkExam");
+const Subject = require("../models/Subject");
+const User = require("../models/User");
 require("dotenv").config();
 
 router.get("/", async (req, res) => {
@@ -16,7 +18,7 @@ router.get("/", async (req, res) => {
 
 router.get("/forusers", async (req, res) => {
   try {
-    const exams = await Exam.find({ active: true }).sort({ createdAt: -1 });
+    const exams = await Exam.find({ finished: false }).sort({ createdAt: -1 });
     res.json(exams);
   } catch (error) {
     console.log(error);
@@ -25,8 +27,22 @@ router.get("/forusers", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    const exam = await Exam.findById(req.params.id);
-    res.json(exam);
+    const exam = await Exam.findOne({
+      oneId: req.params.id,
+      active: true,
+    });
+    const subject = await Subject.findOne({
+      name: exam.name,
+      classNum: exam.classNum,
+    });
+    res.json({
+      examQuestions: subject.questions,
+      examName: exam.name,
+      examClassNum: exam.classNum,
+      examTimeOut: exam.timeOut,
+      examOriginalTimeOut: exam.timeOutOriginal,
+      examId: req.params.id,
+    });
   } catch (error) {
     console.log(error);
   }
@@ -56,21 +72,24 @@ router.post("/create", checkExam, async (req, res) => {
         { $inc: { timeOut: -1000 } },
         { new: true }
       );
-
-      if (updatedExam.timeOut === 0 || updatedExam.timeOut < 0) {
-        await Exam.findByIdAndUpdate(
-          updatedExam._id,
-          { $set: { finished: true } },
-          { new: true }
-        );
-        clearInterval(myInterval);
-        await axios
-          .put(
-            `${process.env.SERVER_URI}/subjects/inactive/${req.body.name}/${req.body.classNum}`
-          )
-          .then((res) => {
-            console.log(res.data.msg);
-          });
+      if (updatedExam) {
+        if (updatedExam.timeOut === 0 || updatedExam.timeOut < 0) {
+          await Exam.findByIdAndUpdate(
+            updatedExam._id,
+            { $set: { finished: true } },
+            { new: true }
+          );
+          clearInterval(myInterval);
+          await axios
+            .put(
+              `${process.env.SERVER_URI}/subjects/inactive/${req.body.name}/${req.body.classNum}`
+            )
+            .then((res) => {
+              console.log(res.data.msg);
+            });
+        }
+      } else {
+        return;
       }
     }, 1000);
 
@@ -86,9 +105,13 @@ router.post("/create", checkExam, async (req, res) => {
 
 router.put("/:id/pupil", async (req, res) => {
   try {
-    const updatedExam = await Exam.findByIdAndUpdate(req.params.id, {
-      $inc: { pupils: 1 },
-    });
+    const updatedExam = await Exam.findByIdAndUpdate(
+      req.params.id,
+      {
+        $inc: { pupils: 1 },
+      },
+      { new: true }
+    );
 
     await updatedExam.save();
 
@@ -108,9 +131,26 @@ router.put("/finish/:id", async (req, res) => {
       { new: true }
     );
 
+    const updatedSubj = await Subject.findOneAndUpdate(
+      { name: updatedExam.name, classNum: updatedExam.classNum },
+      { $set: { active: false } },
+      { new: true }
+    );
+
+    const users = await User.find({
+      exam: `${req.params.name} ${req.params.classNum}`,
+    });
+
+    users.forEach((user) => {
+      user.exam = "";
+      user.status = "free";
+      user.save();
+    });
+
     res.json({
       msg: `${updatedExam.name} fani bo'yicha ${updatedExam.classNum} - sinflar uchun imtihon yopildi!`,
       exam: updatedExam,
+      subject: updatedSubj.active,
     });
   } catch (error) {
     console.log(error);
@@ -124,12 +164,46 @@ router.delete("/:id/:name/:classNum", async (req, res) => {
       `${process.env.SERVER_URI}/subjects/inactive/${req.params.name}/${req.params.classNum}`
     );
 
-    console.log(data);
+    const users = await User.find({
+      exam: `${req.params.name} ${req.params.classNum}`,
+    });
+
+    users.forEach((user) => {
+      user.exam = "";
+      user.status = "free";
+      user.save();
+    });
 
     res.json({
       msg: `${req.params.name} fani bo'yicha ${req.params.classNum} - sinflarga imtihon yopildi!`,
       subject: data.msg,
     });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+router.get("/available/:id", async (req, res) => {
+  try {
+    const exam = await Exam.findOne({ oneId: req.params.id, active: true });
+    if (!exam) return res.json({ msg: "Imtihon mavjud emas!", status: "bad" });
+    res.json({ exam, status: "ok" });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+router.put("/:id/pupilLeave", async (req, res) => {
+  try {
+    const updatedExam = await Exam.findOneAndUpdate(
+      { oneId: req.params.id },
+      {
+        $inc: { pupils: -1 },
+      },
+      { new: true }
+    );
+
+    res.json({ exam: updatedExam, status: "ok", msg: "Imtihondan chiqdingiz" });
   } catch (error) {
     console.log(error);
   }
