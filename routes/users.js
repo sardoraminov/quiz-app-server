@@ -136,9 +136,9 @@ router.get("/enterexam/:oneId", async (req, res) => {
       name: existExam.name,
       classNum: existExam.classNum,
     });
-
+    let resp;
     if (!req.headers["Exam-token"]) {
-      let resp = await axios.put(
+      resp = await axios.put(
         `${process.env.SERVER_URI}/exams/${existExam._id}/pupil`
       );
       console.log(`Imtihonga bitta o'quvchi qo'shildi!`);
@@ -154,9 +154,11 @@ router.get("/enterexam/:oneId", async (req, res) => {
       examName: existExam.name,
       examClassNum: existExam.classNum,
       examTimeOut: existExam.timeOut,
-      exam_token,
-      examId: oneId,
+      examOriginalTimeOut: existExam.timeOutOriginal,
+      examId: req.params.oneId,
       examFinished: existExam.finished,
+      examPupils: resp.data.pupils,
+      exam_token,
     });
   } catch (error) {
     console.log(error);

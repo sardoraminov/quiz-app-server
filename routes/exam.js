@@ -42,6 +42,8 @@ router.get("/:id", async (req, res) => {
       examTimeOut: exam.timeOut,
       examOriginalTimeOut: exam.timeOutOriginal,
       examId: req.params.id,
+      examFinished: exam.finished,
+      examPupils: exam.pupils,
     });
   } catch (error) {
     console.log(error);
