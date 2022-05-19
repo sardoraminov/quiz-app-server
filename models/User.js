@@ -31,7 +31,7 @@ const userSchema = new Schema(
       default:
         "https://icon-library.com/images/default-user-icon/default-user-icon-13.jpg",
     },
-    afterExam: {
+    lastExam: {
       type: String,
       default: "",
     }

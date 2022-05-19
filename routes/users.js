@@ -136,11 +136,14 @@ router.get("/enterexam/:oneId", async (req, res) => {
       name: existExam.name,
       classNum: existExam.classNum,
     });
-    let resp;
+    let exam;
     if (!req.headers["Exam-token"]) {
-      resp = await axios.put(
-        `${process.env.SERVER_URI}/exams/${existExam._id}/pupil`
+      exam = await Exam.findOneAndUpdate(
+        { oneId },
+        { $inc: { pupils: 1 } },
+        { new: true }
       );
+      exam.save();
       console.log(`Imtihonga bitta o'quvchi qo'shildi!`);
     } else {
       return;
@@ -157,7 +160,7 @@ router.get("/enterexam/:oneId", async (req, res) => {
       examOriginalTimeOut: existExam.timeOutOriginal,
       examId: req.params.oneId,
       examFinished: existExam.finished,
-      examPupils: resp.data.pupils,
+      examPupils: exam,
       exam_token,
     });
   } catch (error) {

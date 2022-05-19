@@ -92,7 +92,7 @@ router.post("/create", checkExam, async (req, res) => {
             },
             { $set: { active: false } },
             { new: true }
-          )
+          );
         }
       } else {
         return;
@@ -166,8 +166,13 @@ router.put("/finish/:id", async (req, res) => {
 router.delete("/:id/:name/:classNum", async (req, res) => {
   try {
     await Exam.findByIdAndDelete(req.params.id);
-    const { data } = await axios.put(
-      `${process.env.SERVER_URI}/subjects/inactive/${req.params.name}/${req.params.classNum}`
+    const inActivedSubj = await Subject.findOneAndUpdate(
+      {
+        name: req.params.name,
+        classNum: req.params.classNum,
+      },
+      { $set: { active: false } },
+      { new: true }
     );
 
     const users = await User.find({
@@ -182,7 +187,7 @@ router.delete("/:id/:name/:classNum", async (req, res) => {
 
     res.json({
       msg: `${req.params.name} fani bo'yicha ${req.params.classNum} - sinflarga imtihon yopildi!`,
-      subject: data.msg,
+      subject: inActivedSubj,
     });
   } catch (error) {
     console.log(error);
@@ -220,11 +225,23 @@ router.post("/save_results/:id", async (req, res) => {
     const { pupilAnswers, userId } = req.body;
     const exam = Exam.findOne({ oneId: req.params.id });
     if (!exam) return res.json({ msg: "Imtihon mavjud emas!", status: "bad" });
-    const respOfUser = await axios.put(
-      `${process.env.SERVER_URI}/user/${userId}/free`
+    const freeUser = await User.findOneAndUpdate(
+      { oneId: userId },
+      {
+        $set: {
+          status: "free",
+          exam: "",
+          lastExam: `${exam.name} ${exam.classNum}`,
+        },
+      },
+      { new: true }
     );
-    const respOfExam = await axios.put(
-      `${process.env.SERVER_URI}/exams/${req.params.id}/pupilLeave`
+    const updatedExam = await Exam.findOneAndUpdate(
+      {
+        oneId: req.params.id,
+      },
+      { $inc: { pupils: -1 } },
+      { new: true }
     );
     let correctAnswers = 0;
     pupilAnswers.forEach((answer) => {
@@ -246,15 +263,15 @@ router.post("/save_results/:id", async (req, res) => {
       {
         $set: {
           rating: savedResult.rating,
-          afterExam: `${exam.name} ${exam.classNum}`,
+          lastExam: `${exam.name} ${exam.classNum}`,
         },
       },
       { new: true }
     );
 
     res.json({
-      freeUser: respOfUser.data.user,
-      exam: respOfExam.data.exam,
+      user: freeUser,
+      exam: updatedExam,
       correctAnswers,
       result: savedResult,
       updatedUser,
