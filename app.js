@@ -11,12 +11,7 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:8081",
-      "http://localhost:8080",
-      "https://quiz-app-client-tan.vercel.app/",
-      "https://quiz-app-admin.vercel.app/",
-    ],
+    origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE"],
   })
 );
