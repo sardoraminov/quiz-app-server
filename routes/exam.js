@@ -61,8 +61,10 @@ router.post("/create", checkExam, async (req, res) => {
       oneId: req.body.oneId,
     });
 
-    const { data } = await axios.put(
-      `${process.env.SERVER_URI}/subjects/active/${req.body.name}/${req.body.classNum}`
+    const activedSubj = await Subject.findOneAndUpdate(
+      { name: req.body.name, classNum: req.body.classNum },
+      { $set: { active: true } },
+      { new: true }
     );
 
     const savedExam = await newExam.save();
@@ -83,13 +85,14 @@ router.post("/create", checkExam, async (req, res) => {
             { new: true }
           );
           clearInterval(myInterval);
-          await axios
-            .put(
-              `${process.env.SERVER_URI}/subjects/inactive/${req.body.name}/${req.body.classNum}`
-            )
-            .then((res) => {
-              console.log(res.data.msg);
-            });
+          await Subject.findOneAndUpdate(
+            {
+              name: req.body.name,
+              classNum: req.body.classNum,
+            },
+            { $set: { active: false } },
+            { new: true }
+          )
         }
       } else {
         return;
@@ -99,7 +102,7 @@ router.post("/create", checkExam, async (req, res) => {
     res.json({
       msg: `${savedExam.name} fani bo'yicha ${savedExam.classNum} - sinflar uchun imtihon ochildi!`,
       exam: newExam,
-      subject: data.msg,
+      subject: activedSubj,
     });
   } catch (error) {
     console.log(error);
