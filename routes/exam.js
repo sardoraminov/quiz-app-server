@@ -4,6 +4,7 @@ const { Exam } = require("../models/Exam");
 const { default: axios } = require("axios");
 const { checkExam } = require("../middlewares/checkExam");
 const Subject = require("../models/Subject");
+const Result = require("../models/Result");
 const User = require("../models/User");
 require("dotenv").config();
 
@@ -205,9 +206,58 @@ router.put("/:id/pupilLeave", async (req, res) => {
       { new: true }
     );
 
-    res.json({ exam: updatedExam, status: "ok", msg: "Imtihondan chiqdingiz" });
+    res.json({ exam: updatedExam, status: "ok", msg: "Imtihondan -1" });
   } catch (error) {
     console.log(error);
+  }
+});
+
+router.post("/save_results/:id", async (req, res) => {
+  try {
+    const { pupilAnswers, userId } = req.body;
+    const exam = Exam.findOne({ oneId: req.params.id });
+    if (!exam) return res.json({ msg: "Imtihon mavjud emas!", status: "bad" });
+    const respOfUser = await axios.put(
+      `${process.env.SERVER_URI}/user/${userId}/free`
+    );
+    const respOfExam = await axios.put(
+      `${process.env.SERVER_URI}/exams/${req.params.id}/pupilLeave`
+    );
+    let correctAnswers = 0;
+    pupilAnswers.forEach((answer) => {
+      if (answer.pupilAnswer === answer.correctAnswer) {
+        correctAnswers++;
+      } else {
+        return;
+      }
+    });
+    const newResult = await new Result({
+      userId,
+      examId: exam.oneId,
+      rating: `${correctAnswers}/${pupilAnswers.length}`,
+    });
+
+    const savedResult = await newResult.save();
+    const updatedUser = await User.findOneAndUpdate(
+      { oneId: userId },
+      {
+        $set: {
+          rating: savedResult.rating,
+          afterExam: `${exam.name} ${exam.classNum}`,
+        },
+      },
+      { new: true }
+    );
+
+    res.json({
+      freeUser: respOfUser.data.user,
+      exam: respOfExam.data.exam,
+      correctAnswers,
+      result: savedResult,
+      updatedUser,
+    });
+  } catch (error) {
+    console.log(error.message);
   }
 });
 
