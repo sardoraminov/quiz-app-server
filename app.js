@@ -7,13 +7,22 @@ const cors = require("cors");
 const log = console.log;
 const cookieParser = require("cookie-parser");
 
-app.use(cookieParser())
+app.use(cookieParser());
 
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:8081",
+      "http://localhost:8080",
+      "https://quiz-app-client-tan.vercel.app/",
+      "https://quiz-app-admin.vercel.app/",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname + "dist")));
-
 
 connect(process.env.ATLAS_URI)
   .then(() => {
