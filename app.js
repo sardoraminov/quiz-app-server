@@ -34,6 +34,7 @@ app.get("/", (req, res) => {
 app.use("/exams", require("./routes/exam"));
 app.use("/subjects", require("./routes/subjects"));
 app.use("/users", require("./routes/users"));
+app.use('/results', require('./routes/results'))
 
 app.listen(process.env.PORT, () => {
   log(`Server is running on port ${process.env.PORT}`);

@@ -5,6 +5,7 @@ async function checkExam(req, res, next) {
     const exam = await Exam.findOne({
       name: req.body.name,
       classNum: req.body.classNum,
+      finished: false
     });
 
     if (exam) {

@@ -160,9 +160,20 @@ router.get("/enterexam/:oneId", async (req, res) => {
       examOriginalTimeOut: existExam.timeOutOriginal,
       examId: req.params.oneId,
       examFinished: existExam.finished,
-      examPupils: exam,
+      examPupils: exam.pupils,
       exam_token,
     });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+router.get("/available/:oneId", async (req, res) => {
+  try {
+    const { oneId } = req.params;
+    const user = await User.findOne({ oneId });
+    if (!user) return res.json({ msg: "O'quvchi mavjud emas", status: "bad" });
+    res.json({ status: "ok" });
   } catch (error) {
     console.log(error);
   }

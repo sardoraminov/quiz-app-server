@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { Exam } = require("../models/Exam");
 const { checkExam } = require("../middlewares/checkExam");
-const Subject = require("../models/Subject")
+const Subject = require("../models/Subject");
 const Result = require("../models/Result");
 const User = require("../models/User");
 require("dotenv").config();
@@ -29,7 +29,7 @@ router.get("/:id", async (req, res) => {
   try {
     const exam = await Exam.findOne({
       oneId: req.params.id,
-      active: true,
+      finished: false,
     });
     const subject = await Subject.findOne({
       name: exam.name,
@@ -195,7 +195,7 @@ router.delete("/:id/:name/:classNum", async (req, res) => {
 
 router.get("/available/:id", async (req, res) => {
   try {
-    const exam = await Exam.findOne({ oneId: req.params.id, active: true });
+    const exam = await Exam.findOne({ oneId: req.params.id, finished: false });
     if (!exam) return res.json({ msg: "Imtihon mavjud emas!", status: "bad" });
     res.json({ exam, status: "ok" });
   } catch (error) {
@@ -222,19 +222,9 @@ router.put("/:id/pupilLeave", async (req, res) => {
 router.post("/save_results/:id", async (req, res) => {
   try {
     const { pupilAnswers, userId } = req.body;
-    const exam = Exam.findOne({ oneId: req.params.id });
+    const exam = await Exam.findOne({ oneId: req.params.id });
     if (!exam) return res.json({ msg: "Imtihon mavjud emas!", status: "bad" });
-    const freeUser = await User.findOneAndUpdate(
-      { oneId: userId },
-      {
-        $set: {
-          status: "free",
-          exam: "",
-          lastExam: `${exam.name} ${exam.classNum}`,
-        },
-      },
-      { new: true }
-    );
+
     const updatedExam = await Exam.findOneAndUpdate(
       {
         oneId: req.params.id,
@@ -242,6 +232,7 @@ router.post("/save_results/:id", async (req, res) => {
       { $inc: { pupils: -1 } },
       { new: true }
     );
+
     let correctAnswers = 0;
     pupilAnswers.forEach((answer) => {
       if (answer.pupilAnswer === answer.correctAnswer) {
@@ -250,30 +241,32 @@ router.post("/save_results/:id", async (req, res) => {
         return;
       }
     });
+
     const newResult = await new Result({
       userId,
-      examId: exam.oneId,
+      examId: req.params.id,
       rating: `${correctAnswers}/${pupilAnswers.length}`,
     });
 
     const savedResult = await newResult.save();
+
     const updatedUser = await User.findOneAndUpdate(
       { oneId: userId },
       {
         $set: {
-          rating: savedResult.rating,
+          status: "free",
+          exam: "",
           lastExam: `${exam.name} ${exam.classNum}`,
+          rating: savedResult.rating,
         },
       },
       { new: true }
     );
-
     res.json({
-      user: freeUser,
+      user: updatedUser,
       exam: updatedExam,
       correctAnswers,
       result: savedResult,
-      updatedUser,
     });
   } catch (error) {
     console.log(error.message);
