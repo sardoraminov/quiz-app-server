@@ -1,9 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const { Exam } = require("../models/Exam");
-const { default: axios } = require("axios");
 const { checkExam } = require("../middlewares/checkExam");
-const Subject = require("../models/Subject");
+const Subject = require("../models/Subject")
 const Result = require("../models/Result");
 const User = require("../models/User");
 require("dotenv").config();
