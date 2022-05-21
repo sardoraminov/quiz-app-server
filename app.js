@@ -11,7 +11,12 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: "*",
+    origin: [
+      "http://localhost:8080/",
+      "http://localhost:8081/",
+      "https://quiz-app-admin.vercel.app",
+      "https://quiz-app-client-tan.vercel.app",
+    ],
     methods: ["GET", "POST", "PUT", "DELETE"],
   })
 );
@@ -34,7 +39,7 @@ app.get("/", (req, res) => {
 app.use("/exams", require("./routes/exam"));
 app.use("/subjects", require("./routes/subjects"));
 app.use("/users", require("./routes/users"));
-app.use('/results', require('./routes/results'))
+app.use("/results", require("./routes/results"));
 
 app.listen(process.env.PORT, () => {
   log(`Server is running on port ${process.env.PORT}`);
