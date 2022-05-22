@@ -2,13 +2,21 @@ const { model, Schema } = require("mongoose");
 
 const resultSchema = new Schema(
   {
-    examId: {
+    exam: {
       type: String,
       required: true,
     },
-    userId: {
+    examId: {
+      type: String,
+      required: true
+    },
+    pupil: {
       type: String,
       required: true,
+    },
+    pupilId: {
+      type: String,
+      required: true
     },
     rating: {
       type: String,

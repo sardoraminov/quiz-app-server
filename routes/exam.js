@@ -221,7 +221,7 @@ router.put("/:id/pupilLeave", async (req, res) => {
 
 router.post("/save_results/:id", async (req, res) => {
   try {
-    const { pupilAnswers, userId } = req.body;
+    const { pupilAnswers, pupil, userId } = req.body;
     const exam = await Exam.findOne({ oneId: req.params.id });
     if (!exam) return res.json({ msg: "Imtihon mavjud emas!", status: "bad" });
 
@@ -243,8 +243,10 @@ router.post("/save_results/:id", async (req, res) => {
     });
 
     const newResult = await new Result({
-      userId,
-      examId: req.params.id,
+      pupil,
+      pupilId: userId,
+      exam: `${exam.name} ${exam.classNum}`,
+      examId: exam.oneId,
       rating: `${correctAnswers}/${pupilAnswers.length}`,
     });
 

@@ -6,20 +6,10 @@ const path = require("path");
 const cors = require("cors");
 const log = console.log;
 const cookieParser = require("cookie-parser");
-
 app.use(cookieParser());
 
-app.use(
-  cors({
-    origin: [
-      "http://localhost:8080/",
-      "http://localhost:8081/",
-      "https://quiz-app-admin.vercel.app",
-      "https://quiz-app-client-tan.vercel.app",
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-  })
-);
+app.use(cors({ origin: "*" }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname + "dist")));

@@ -24,7 +24,6 @@ router.get("/", async (req, res) => {
 router.get("/:id", existUser, async (req, res) => {
   try {
     const user = await User.findOne({ oneId: req.params.id });
-    console.log(user);
 
     res.json(user);
   } catch (error) {
@@ -144,7 +143,6 @@ router.get("/enterexam/:oneId", async (req, res) => {
         { new: true }
       );
       exam.save();
-      console.log(`Imtihonga bitta o'quvchi qo'shildi!`);
     } else {
       return;
     }

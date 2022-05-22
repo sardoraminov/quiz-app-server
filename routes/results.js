@@ -26,11 +26,11 @@ router.get("/:examId", async (req, res) => {
   }
 });
 
-router.get("/:userId/", async (req, res) => {
-  const { userId } = req.params;
+router.get("/:pupilId/", async (req, res) => {
+  const { pupilId } = req.params;
   try {
     const results = await Result.find({
-      userId,
+      pupilId,
     });
     res.json(results);
   } catch (error) {
