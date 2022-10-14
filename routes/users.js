@@ -17,7 +17,7 @@ router.get("/", async (req, res) => {
       res.json(sortedUsers);
     });
   } catch (error) {
-    console.log(error);
+    res.json(error)
   }
 });
 
