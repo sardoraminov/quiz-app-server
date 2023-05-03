@@ -8,7 +8,9 @@ const log = console.log;
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 
-app.use(cors({ origin: "*" }));
+app.use(
+  cors({ origin: ["https://quiz-app-client-sigma.vercel.app/"], methods: "*" })
+);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
